@@ -1,0 +1,47 @@
+<!doctype html><meta charset="utf-8"><pre id="log">start</pre><div id="host" style="display:none"></div><script>
+const FPS=12, SIZE=128;
+const names=["clear-day", "clear-night", "extreme-day-rain", "extreme-day-snow", "extreme-night-rain", "extreme-night-snow", "fog-day", "fog-night", "mostly-clear-day", "mostly-clear-night", "overcast-day", "overcast-day-drizzle", "overcast-day-rain", "overcast-day-sleet", "overcast-day-snow", "overcast-night", "overcast-night-drizzle", "overcast-night-rain", "overcast-night-sleet", "overcast-night-snow", "partly-cloudy-day", "partly-cloudy-day-drizzle", "partly-cloudy-day-rain", "partly-cloudy-day-snow", "partly-cloudy-night", "partly-cloudy-night-drizzle", "partly-cloudy-night-rain", "partly-cloudy-night-snow", "thunderstorms-day-hail", "thunderstorms-day-rain", "thunderstorms-night-hail", "thunderstorms-night-rain"];
+const log=document.getElementById('log');
+function num(s){return s.trim().split(/[\s,]+/).map(Number)}
+function bez(x1,y1,x2,y2,t){ // CSS-cubic-bezier: x(t)=p -> y
+  let lo=0,hi=1,m=0;for(let i=0;i<30;i++){m=(lo+hi)/2;const x=3*(1-m)*(1-m)*m*x1+3*(1-m)*m*m*x2+m*m*m;if(x<t)lo=m;else hi=m;}
+  return 3*(1-m)*(1-m)*m*y1+3*(1-m)*m*m*y2+m*m*m;}
+function parseAnim(el){
+  const d={el, target:el.parentNode, tag:el.tagName, attr:el.getAttribute('attributeName'), type:el.getAttribute('type'),
+    vals:el.getAttribute('values').split(';').map(num), dur:parseFloat(el.getAttribute('dur')), begin:parseFloat(el.getAttribute('begin')||'0')};
+  const kt=el.getAttribute('keyTimes'); d.kt=kt?kt.split(';').map(parseFloat):d.vals.map((_,i)=>i/(d.vals.length-1));
+  const ks=el.getAttribute('keySplines'); d.spline=el.getAttribute('calcMode')==='spline'&&ks?ks.split(';').map(num):null;
+  return d;}
+function value(d,t){
+  const loc=(((t-d.begin)%d.dur)+d.dur)%d.dur/d.dur;   // Dauerschleife: Beginn in der Vergangenheit
+  let i=0;while(i<d.kt.length-2&&loc>=d.kt[i+1])i++;
+  const t0=d.kt[i],t1=d.kt[i+1];let p=t1>t0?(loc-t0)/(t1-t0):0;
+  if(d.spline){const k=d.spline[i];p=bez(k[0],k[1],k[2],k[3],p);}
+  const a=d.vals[i],b=d.vals[i+1];return a.map((v,j)=>v+(b[j]-v)*p);}
+(async()=>{
+for(const n of names){
+  const txt=await (await fetch('svg/'+n+'.svg')).text();
+  const host=document.getElementById('host');host.innerHTML=txt;const svg=host.firstElementChild;
+  svg.setAttribute('width',SIZE);svg.setAttribute('height',SIZE);
+  const anims=[...svg.querySelectorAll('animate,animateTransform')].map(parseAnim);
+  const L=Math.max(...anims.map(a=>a.dur)); let per=1;// gemeinsame Periode (ganze Sekunden)
+  const secs=[...new Set(anims.map(a=>Math.round(a.dur*1000)))];
+  const gcd=(a,b)=>b?gcd(b,a%b):a; let l=secs[0];for(const s of secs)l=l/gcd(l,s)*s; per=l/1000;
+  const N=Math.round(per*FPS);
+  anims.forEach(a=>a.el.remove());
+  const base=anims.map(a=>a.target.getAttribute(a.attr));
+  for(let f=0;f<N;f++){
+    const t=f/FPS;
+    anims.forEach(a=>{const v=value(a,t);
+      if(a.attr==='opacity')a.target.setAttribute('opacity',v[0]);
+      else if(a.type==='translate')a.target.setAttribute('transform',`translate(${v[0]} ${v[1]||0})`);
+      else if(a.type==='rotate')a.target.setAttribute('transform',`rotate(${v.join(' ')})`);});
+    const s=new XMLSerializer().serializeToString(svg);
+    const url=URL.createObjectURL(new Blob([s],{type:'image/svg+xml'}));const img=new Image();await new Promise((ok,err)=>{img.onload=ok;img.onerror=err;img.src=url;});   // onload statt decode(): laeuft auch, wenn der Tab nicht sichtbar ist
+    const c=document.createElement('canvas');c.width=SIZE;c.height=SIZE;c.getContext('2d').drawImage(img,0,0,SIZE,SIZE);
+    const blob=await new Promise(r=>c.toBlob(r,'image/png'));
+    await fetch('/save/'+n+'/'+String(f).padStart(3,'0')+'.png',{method:'POST',body:blob});URL.revokeObjectURL(url);
+  }
+  log.textContent+="\n"+n+" "+N+" Bilder, "+anims.length+" Animationen";
+}
+log.textContent+="\nfertig";})();</script>
