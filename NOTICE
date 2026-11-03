@@ -1,0 +1,38 @@
+WetterCube Biker
+Copyright 2026 Jan Althaus (JPPeterson-lab)
+
+Licensed under the GNU Affero General Public License, version 3 (AGPL-3.0-only, see the file LICENSE).
+Anyone who modifies this software and distributes it, or lets others use it over a network, must offer the complete
+source code of the modified version under the same licence. Use that does not fit these terms (for example a
+closed-source commercial product) needs a separate commercial licence from the author (see https://wettercube.de).
+
+Name and logos: "WetterCube", "WetterCube Biker" and the WetterCube logos are not licensed under the
+AGPL; no trademark rights are granted (declined under section 7(e) of the licence).
+All rights to the name and the logos are reserved by Jan Althaus. They may be shown unchanged when reporting on
+the project; forks and derived products need their own name and logo. Rules: https://wettercube.de/logo-nutzung/
+
+Texts, images and documentation (README, graphics, change history) are licensed under
+CC BY-NC 4.0, see LICENSE-Dokumentation.txt.
+
+The project was started from the source code of WetterCube Fusion (Apache-2.0, same author, WetterCube-Fusion on GitHub);
+this copy is distributed under the AGPL-3.0 by the sole copyright holder.
+
+The user interface code in src/ui/ is generated with PicoPixel (https://picopixel.io); the exported code
+belongs to the author and is licensed under the AGPL-3.0 as well.
+
+This product includes software, fonts and data of third parties that keep their own licences
+(details in CREDITS.md):
+  - ESP-IDF (Espressif Systems), Apache-2.0
+  - LVGL, MIT (includes LodePNG, zlib, and stb_truetype for the built-in TrueType rendering)
+  - ArduinoJson, MIT (Benoit Blanchon)
+  - Espressif components (mdns, esp_codec_dev, esp_lcd_ek79007, esp_wifi_remote, esp_hosted and related), Apache-2.0
+  - Espressif esp_lcd_touch (touch driver GT911), Apache-2.0: the files src/hardware/touch.* and gt911.* are derived from it and keep
+    their Apache-2.0 notice (Apache-2.0 code may be combined into an AGPL-3.0 work)
+  - Meteocons (Bas Milius), MIT
+  - Montserrat (The Montserrat Project Authors), SIL Open Font License 1.1: the font file assets/fonts/Montserrat-Regular.ttf
+    is embedded in the firmware and shipped unmodified with its licence text (assets/fonts/OFL.txt); it is also the lettering of the logo
+
+Services used at run time (no code of theirs is included): Open-Meteo.com (weather data, CC BY 4.0, free interface for NON-COMMERCIAL use only),
+Deutscher Wetterdienst (warnings and radar, CC BY 4.0, "Quelle: Deutscher Wetterdienst"), Valhalla at FOSSGIS e. V. (routing),
+Photon by komoot (place search) and the OpenStreetMap tile servers; map data (c) OpenStreetMap contributors (ODbL). The device uses these services sparingly
+and identifies itself with its own User-Agent. Details and attribution: CREDITS.md.

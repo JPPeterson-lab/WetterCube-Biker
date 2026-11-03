@@ -1,0 +1,17 @@
+# WetterCube Biker – Partitionstabelle fuer das Waveshare ESP32-P4-WIFI6-Touch-LCD-7B (Flash 32 MB, PSRAM 32 MB)
+# Wichtig: Alles, was als Programm laeuft (factory, app0, app1), muss unterhalb von 16 MB (0x1000000) liegen. Die Firmware wird per Cache
+# eingeblendet (esp_image_verify, Start); der Bootloader und das laufende System koennen nur 24 Bit Flash-Adressen einblenden, Adressen
+# ab 16 MB schlagen dort fehl ("out of range for 24bit flash mapping"). Die Option fuer 32 Bit Adressen
+# (BOOTLOADER_CACHE_32BIT_ADDR_QUAD_FLASH) ist experimentell und bleibt aus.
+# Darum: nvs/otadata an denselben Stellen wie beim Fusion, factory (Notfall-App, 0,66 MB gross) klein, app0/app1 je knapp 8 MB, Ende bei 16 MB.
+# Die obere Haelfte des Flash (16 bis 31 MB) gehoert den Daten: "daten" ist ein FAT-Laufwerk mit Wear-Levelling fuer Routen (GPX),
+# Kartenbilder und Wetterverlauf. Daten werden ohne Einblendung gelesen (esp_partition_read), die 16-MB-Grenze gilt dafuer nicht.
+# Ohne Speicherkarte hat das Geraet damit trotzdem Platz fuer rund 15 MB Routen und Karten.
+# factory: kleine Notfall-App (Wiederherstellung); app0/app1: Firmware, Updates wechseln zwischen beiden (Rollback).
+# Name,    Type, SubType,  Offset,    Size,     Flags
+nvs,       data, nvs,      0x9000,    0x5000,
+otadata,   data, ota,      0xe000,    0x2000,
+factory,   app,  factory,  0x10000,   0xB0000,
+app0,      app,  ota_0,    0xC0000,   0x7A0000,
+app1,      app,  ota_1,    0x860000,  0x7A0000,
+daten,     data, fat,      0x1000000, 0xF00000,
